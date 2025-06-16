@@ -1,32 +1,54 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "myapp:latest"
+        SERVER_IP = "60.204.219.177"
+        SERVER_USER = "root"
+    }
+
     stages {
         stage('拉取代码') {
             steps {
-                echo '拉取代码完成'
+                git 'https://github.com/aaaaaaliang/jenkins-demo.git'
             }
         }
 
-        stage('构建') {
+        stage('构建镜像') {
             steps {
-                echo '开始构建项目...'
-                // 示例：假如是 Go 项目
-                // sh 'go build -v -o main main.go'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('测试') {
+        stage('上传并部署') {
             steps {
-                echo '运行测试用例...123'
-                // sh 'go test ./...'
+                withCredentials([usernamePassword(
+                    credentialsId: 'a9c9f749-be96-44a4-89ef-f36c281b3fbc',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    sh '''
+                        echo "✅ 上传镜像到服务器..."
+                        docker save $IMAGE_NAME | bzip2 | sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no $USER@$SERVER_IP 'bunzip2 | docker load'
+
+                        echo "🚀 重启远程容器..."
+                        sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no $USER@$SERVER_IP '
+                            docker stop myapp || true
+                            docker rm myapp || true
+                            docker run -d --name myapp -p 8888:8888 myapp:latest
+                        '
+                    '''
+                }
             }
         }
+    }
 
-        stage('部署') {
-            steps {
-                echo '部署逻辑...'
-            }
+    post {
+        success {
+            echo '🎉 构建部署成功！访问：http://'$SERVER_IP':8888'
+        }
+        failure {
+            echo '❌ 构建或部署失败，请查看控制台日志'
         }
     }
 }
