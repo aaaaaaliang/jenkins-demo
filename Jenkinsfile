@@ -11,9 +11,10 @@ pipeline {
     stages {
         stage('拉取代码') {
             steps {
-                git 'https://github.com/aaaaaaliang/jenkins-demo.git'
+                git branch: 'main', url: 'https://github.com/aaaaaaliang/jenkins-demo.git'
             }
         }
+
 
         stage('构建镜像') {
             steps {
