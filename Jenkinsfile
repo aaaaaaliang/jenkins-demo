@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = "myapp:latest"
         SERVER_IP = "60.204.219.177"
         SERVER_USER = "root"
+        SERVER_PORT = "8888"
     }
 
     stages {
@@ -35,7 +36,7 @@ pipeline {
                         sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no $USER@$SERVER_IP '
                             docker stop myapp || true
                             docker rm myapp || true
-                            docker run -d --name myapp -p 8888:8888 myapp:latest
+                            docker run -d --name myapp -p ${SERVER_PORT}:${SERVER_PORT} myapp:latest
                         '
                     '''
                 }
@@ -45,7 +46,7 @@ pipeline {
 
     post {
         success {
-            echo '🎉 构建部署成功！访问：http://'$SERVER_IP':8888'
+            echo "🎉 构建部署成功！访问：http://${SERVER_IP}:${SERVER_PORT}"
         }
         failure {
             echo '❌ 构建或部署失败，请查看控制台日志'
