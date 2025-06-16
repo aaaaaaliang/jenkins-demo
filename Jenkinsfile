@@ -18,7 +18,7 @@ pipeline {
 
         stage('测试') {
             steps {
-                echo '运行测试用例...'
+                echo '运行测试用例...123'
                 // sh 'go test ./...'
             }
         }
