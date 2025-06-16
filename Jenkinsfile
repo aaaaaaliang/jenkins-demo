@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('拉取代码') {
             steps {
-                git branch: 'main', url: 'https://github.com/aaaaaaliang/jenkins-demo.git'
+                git branch: 'main', url: 'https://ghproxy.com/https://github.com/aaaaaaliang/jenkins-demo.git'
             }
         }
 
