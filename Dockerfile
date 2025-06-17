@@ -1,5 +1,8 @@
-# 使用官方 Go 镜像作为构建环境
+# ---------- 构建阶段 ----------
 FROM golang:1.23 AS builder
+
+# 设置国内模块代理，防止 go mod download 失败
+ENV GOPROXY=https://goproxy.cn,direct
 
 WORKDIR /app
 
@@ -7,15 +10,15 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
-COPY . .
+COPY . ./
 RUN go build -o app .
 
-# 使用小镜像运行程序
+# ---------- 运行阶段 ----------
 FROM debian:bookworm-slim
 
 WORKDIR /app
 
-COPY --from=builder /app/app .
+COPY --from=builder /app/app ./
 
 EXPOSE 8080
 

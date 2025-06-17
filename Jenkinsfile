@@ -6,13 +6,14 @@ pipeline {
         SERVER_IP = "60.204.219.177"
         SERVER_USER = "root"
         SERVER_PORT = "8888"
+        GOPROXY = "https://goproxy.cn,direct"  // ✅ 设置国内 Go 模块代理
     }
 
     stages {
         stage('拉取代码（shell）') {
             steps {
                 sh '''
-                    echo "🚀 开始拉取代码（使用 ghproxy 加速）..."
+                    echo "🚀 开始拉取代码..."
                     rm -rf jenkins-demo || true
                     git clone --depth=1 https://github.com/aaaaaaliang/jenkins-demo.git
                     cp -r jenkins-demo/* .
@@ -23,7 +24,10 @@ pipeline {
 
         stage('构建镜像') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh '''
+                    echo "🐳 开始构建镜像..."
+                    docker build -t $IMAGE_NAME --network=host .
+                '''
             }
         }
 
@@ -35,7 +39,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     sh '''
-                        echo "✅ 上传镜像到服务器..."
+                        echo "📦 上传镜像到服务器..."
                         docker save $IMAGE_NAME | bzip2 | sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no $USER@$SERVER_IP 'bunzip2 | docker load'
 
                         echo "🚀 重启远程容器..."
