@@ -14,7 +14,7 @@ pipeline {
                 sh '''
                     echo "🚀 开始拉取代码（使用 ghproxy 加速）..."
                     rm -rf jenkins-demo || true
-                    git clone --depth=1 https://ghproxy.com/https://github.com/aaaaaaliang/jenkins-demo.git
+                    git clone --depth=1 https://github.com/aaaaaaliang/jenkins-demo.git
                     cp -r jenkins-demo/* .
                     echo "✅ 拉取完成"
                 '''
